@@ -1,0 +1,55 @@
+#include "mbed.h"
+
+
+// Define the Input pins 
+DigitalIn  START(p5); //Start control, start = 1 
+DigitalIn  GUARD(p6); //Machine guard sensor; guard closed = 1 
+DigitalIn  TEMP(p7);//Temperature sensor; excess temp = 1 
+DigitalIn  STOP(p8); //Stop control, stop = 1 
+
+//Define the Output pins 
+DigitalOut READY(p9);//Motor is ready to run, i.e. guard closed, temp OK. 
+DigitalOut RUNNING(p10); //Motor is running 
+DigitalOut FAULT(p11); //Guard is openend while motor running 
+DigitalOut EXCES(p12); //Excess temp 
+
+void main() 
+{  
+	while(1) { 
+		while ((GUARD==0)||(TEMP==1)){ //wait in loop 
+		  RUNNING=FAULT=EXCES=0; //clear all displays 
+		  READY=!READY;          //flash READY,  
+		  wait(0.2); 
+		  } 
+		  … 
+		  
+		  
+		  READY=1;  //motor is ready to run  
+          while (START==0) //wait for START to be pressed 
+          wait(0.01); //simulator does not accept empty while loops 
+          //Now start and run the motor,  
+   
+          //Now start and run the motor,
+    	//stay in this loop until need to exit 
+		while((GUARD==1)&&(TEMP==0)&&(STOP==0)){ 
+		READY=0; 
+		RUNNING=1;   
+		wait(0.2);  //diagnostic 
+		} 
+	    //here if motor to stop, determine and act on cause 
+		if (GUARD==0){ 
+			RUNNING=0; 
+			FAULT=1; 
+			wait(0.5); 
+			FAULT=0; 
+			} 
+		if (TEMP==1){ 
+			RUNNING=0; 
+			EXCES=1; 
+			wait(0.5); 
+			EXCES=0;
+			}
+		if (STOP==1) 
+			RUNNING=0; //loop will return to start 
+	}   
+}       
